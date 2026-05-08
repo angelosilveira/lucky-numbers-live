@@ -14,16 +14,275 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cards: {
+        Row: {
+          card_number: string
+          created_at: string
+          draw_id: string
+          id: string
+          numbers: number[]
+          player_name: string
+          price: number
+        }
+        Insert: {
+          card_number: string
+          created_at?: string
+          draw_id: string
+          id?: string
+          numbers: number[]
+          player_name: string
+          price: number
+        }
+        Update: {
+          card_number?: string
+          created_at?: string
+          draw_id?: string
+          id?: string
+          numbers?: number[]
+          player_name?: string
+          price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cards_draw_id_fkey"
+            columns: ["draw_id"]
+            isOneToOne: false
+            referencedRelation: "draws"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      draw_numbers: {
+        Row: {
+          draw_id: string
+          drawn_at: string
+          id: string
+          number: number
+          position: number
+        }
+        Insert: {
+          draw_id: string
+          drawn_at?: string
+          id?: string
+          number: number
+          position: number
+        }
+        Update: {
+          draw_id?: string
+          drawn_at?: string
+          id?: string
+          number?: number
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "draw_numbers_draw_id_fkey"
+            columns: ["draw_id"]
+            isOneToOne: false
+            referencedRelation: "draws"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      draws: {
+        Row: {
+          card_price: number
+          created_at: string
+          created_by: string | null
+          finalized_at: string | null
+          id: string
+          prize_amount: number
+          scheduled_at: string
+          status: Database["public"]["Enums"]["draw_status"]
+        }
+        Insert: {
+          card_price: number
+          created_at?: string
+          created_by?: string | null
+          finalized_at?: string | null
+          id?: string
+          prize_amount: number
+          scheduled_at: string
+          status?: Database["public"]["Enums"]["draw_status"]
+        }
+        Update: {
+          card_price?: number
+          created_at?: string
+          created_by?: string | null
+          finalized_at?: string | null
+          id?: string
+          prize_amount?: number
+          scheduled_at?: string
+          status?: Database["public"]["Enums"]["draw_status"]
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          cpf: string
+          created_at: string
+          id: string
+          name: string | null
+        }
+        Insert: {
+          cpf: string
+          created_at?: string
+          id: string
+          name?: string | null
+        }
+        Update: {
+          cpf?: string
+          created_at?: string
+          id?: string
+          name?: string | null
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          card_price: number
+          id: boolean
+          prize_amount: number
+          updated_at: string
+        }
+        Insert: {
+          card_price?: number
+          id?: boolean
+          prize_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          card_price?: number
+          id?: boolean
+          prize_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      winners: {
+        Row: {
+          card_id: string
+          draw_id: string
+          hits: number
+          id: string
+          prize_share: number
+          won_at: string
+        }
+        Insert: {
+          card_id: string
+          draw_id: string
+          hits: number
+          id?: string
+          prize_share: number
+          won_at?: string
+        }
+        Update: {
+          card_id?: string
+          draw_id?: string
+          hits?: number
+          id?: string
+          prize_share?: number
+          won_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "winners_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "card_hits"
+            referencedColumns: ["card_id"]
+          },
+          {
+            foreignKeyName: "winners_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "winners_draw_id_fkey"
+            columns: ["draw_id"]
+            isOneToOne: false
+            referencedRelation: "draws"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      card_hits: {
+        Row: {
+          card_id: string | null
+          card_number: string | null
+          draw_id: string | null
+          hits: number | null
+          numbers: number[] | null
+          player_name: string | null
+        }
+        Insert: {
+          card_id?: string | null
+          card_number?: string | null
+          draw_id?: string | null
+          hits?: never
+          numbers?: number[] | null
+          player_name?: string | null
+        }
+        Update: {
+          card_id?: string | null
+          card_number?: string | null
+          draw_id?: string | null
+          hits?: never
+          numbers?: number[] | null
+          player_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cards_draw_id_fkey"
+            columns: ["draw_id"]
+            isOneToOne: false
+            referencedRelation: "draws"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      add_draw_number: {
+        Args: { p_draw: string; p_number: number }
+        Returns: undefined
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
+      draw_status: "active" | "finalized" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +409,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+      draw_status: ["active", "finalized", "cancelled"],
+    },
   },
 } as const
