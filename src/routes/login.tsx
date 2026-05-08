@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { cpfToEmail, formatCpf, onlyDigits } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,31 +16,27 @@ export const Route = createFileRoute("/login")({
 });
 
 const schema = z.object({
-  cpf: z
-    .string()
-    .transform((v) => onlyDigits(v))
-    .refine((v) => v.length === 11, "CPF deve ter 11 dígitos"),
+  email: z.string().email("E-mail inválido"),
   password: z.string().min(6, "Mínimo 6 caracteres"),
 });
 
 function LoginPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const form = useForm<{ cpf: string; password: string }>({
+  const form = useForm<{ email: string; password: string }>({
     resolver: zodResolver(schema),
-    defaultValues: { cpf: "", password: "" },
+    defaultValues: { email: "", password: "" },
   });
 
-  async function onSubmit(values: { cpf: string; password: string }) {
+  async function onSubmit(values: { email: string; password: string }) {
     setLoading(true);
-    const email = cpfToEmail(values.cpf);
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
+      email: values.email,
       password: values.password,
     });
     if (error || !data.user) {
       setLoading(false);
-      toast.error("CPF ou senha inválidos");
+      toast.error("E-mail ou senha inválidos");
       return;
     }
     const { data: role } = await supabase
@@ -82,18 +77,17 @@ function LoginPage() {
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <Label htmlFor="cpf">CPF</Label>
+            <Label htmlFor="email">E-mail</Label>
             <Input
-              id="cpf"
-              inputMode="numeric"
+              id="email"
+              type="email"
               autoComplete="username"
-              placeholder="000.000.000-00"
-              value={formatCpf(form.watch("cpf"))}
-              onChange={(e) => form.setValue("cpf", onlyDigits(e.target.value))}
+              placeholder="admin@exemplo.com"
+              {...form.register("email")}
             />
-            {form.formState.errors.cpf && (
+            {form.formState.errors.email && (
               <p className="text-xs text-destructive mt-1">
-                {form.formState.errors.cpf.message}
+                {form.formState.errors.email.message}
               </p>
             )}
           </div>
@@ -117,7 +111,7 @@ function LoginPage() {
         </form>
 
         <p className="text-xs text-muted-foreground mt-4 text-center">
-          O administrador é cadastrado pela equipe.
+          Acesso restrito. Conta criada pela equipe.
         </p>
       </div>
     </div>
