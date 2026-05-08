@@ -1,0 +1,4 @@
+compatibility_date = "2025-05-08"
+
+[build]
+command = "yarn install && yarn build"
