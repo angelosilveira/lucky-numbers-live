@@ -3,7 +3,8 @@
     "allow": [
       "Bash(Get-ChildItem -Force)",
       "Bash(Select-Object Name, PSIsContainer)",
-      "Bash(supabase migration *)"
+      "Bash(supabase migration *)",
+      "mcp__claude_ai_Context7__query-docs"
     ]
   }
 }
