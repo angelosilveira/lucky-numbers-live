@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { brl, fmt2, formatDateTime } from "@/lib/format";
+import { fmt2, formatDateTime } from "@/lib/format";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/sorteios")({
@@ -36,14 +36,13 @@ function SorteiosPage() {
     d.setHours(21, 0, 0, 0);
     return d.toISOString().slice(0, 16);
   });
-  const [prize, setPrize] = useState<number>(0);
   const [num, setNum] = useState<string>("");
 
   const createDraw = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("draws").insert({
         scheduled_at: new Date(scheduledAt).toISOString(),
-        prize_amount: prize || Number(settings.data?.prize_amount ?? 0),
+        prize_amount: 0,
         card_price: Number(settings.data?.card_price ?? 10),
       });
       if (error) throw error;
@@ -99,26 +98,13 @@ function SorteiosPage() {
       {!draw.data ? (
         <div className="rounded-xl border border-border bg-card p-5 shadow-card max-w-xl">
           <div className="font-display text-lg mb-3">Criar novo sorteio</div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <Label>Data/Hora</Label>
-              <Input
-                type="datetime-local"
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Prêmio (R$)</Label>
-              <Input
-                type="number"
-                min={0}
-                step="0.01"
-                value={prize}
-                onChange={(e) => setPrize(Number(e.target.value))}
-                placeholder={String(settings.data?.prize_amount ?? 0)}
-              />
-            </div>
+          <div className="max-w-xs">
+            <Label>Data/Hora</Label>
+            <Input
+              type="datetime-local"
+              value={scheduledAt}
+              onChange={(e) => setScheduledAt(e.target.value)}
+            />
           </div>
           <Button className="mt-4" onClick={() => createDraw.mutate()} disabled={createDraw.isPending}>
             Criar sorteio
@@ -130,9 +116,6 @@ function SorteiosPage() {
             <div>
               <div className="text-xs uppercase text-muted-foreground">Sorteio ativo</div>
               <div className="font-display text-xl">{formatDateTime(draw.data.scheduled_at)}</div>
-              <div className="text-sm text-muted-foreground">
-                Prêmio: {brl(Number(draw.data.prize_amount))}
-              </div>
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -210,7 +193,6 @@ function SorteiosPage() {
               <tr className="text-left text-xs uppercase text-muted-foreground">
                 <th className="py-2">Data</th>
                 <th className="py-2">Status</th>
-                <th className="py-2 text-right">Prêmio</th>
               </tr>
             </thead>
             <tbody>
@@ -218,7 +200,6 @@ function SorteiosPage() {
                 <tr key={d.id} className="border-t border-border">
                   <td className="py-2">{formatDateTime(d.scheduled_at)}</td>
                   <td className="py-2 capitalize">{d.status}</td>
-                  <td className="py-2 text-right">{brl(Number(d.prize_amount))}</td>
                 </tr>
               ))}
             </tbody>
