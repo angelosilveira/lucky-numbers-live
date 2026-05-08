@@ -4,7 +4,8 @@
       "Bash(Get-ChildItem -Force)",
       "Bash(Select-Object Name, PSIsContainer)",
       "Bash(supabase migration *)",
-      "mcp__claude_ai_Context7__query-docs"
+      "mcp__claude_ai_Context7__query-docs",
+      "mcp__claude_ai_Context7__resolve-library-id"
     ]
   }
 }
