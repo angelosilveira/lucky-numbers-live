@@ -48,8 +48,12 @@ function PublicHome() {
   const winnersList = (winners.data ?? []) as any[];
 
   const leaders = useMemo(
-    () => cardsList.slice().sort((a, b) => b.hits - a.hits).slice(0, 5),
-    [cardsList]
+    () =>
+      cardsList
+        .slice()
+        .sort((a, b) => b.hits - a.hits)
+        .slice(0, 5),
+    [cardsList],
   );
 
   return (
@@ -65,13 +69,6 @@ function PublicHome() {
               Bicho<span className="text-gold text-glow-gold">Live</span>
             </div>
           </div>
-          <Link
-            to="/login"
-            className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-md border border-border hover:border-primary/60 hover:text-gold transition"
-          >
-            <Lock className="size-3.5" />
-            Admin
-          </Link>
         </div>
       </header>
 
@@ -92,9 +89,7 @@ function PublicHome() {
               </h1>
             </div>
             <div className="text-right">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                Prêmio
-              </div>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">Prêmio</div>
               <div className="font-display text-3xl sm:text-5xl text-gold text-glow-gold">
                 {brl(Number(draw.data?.prize_amount ?? 0))}
               </div>
