@@ -1,3 +1,4 @@
 {
-  "routes": [{ "handle": "filesystem" }, { "src": "/.*", "dest": "/" }]
+  "buildCommand": "npm run build",
+  "framework": null
 }
