@@ -5,7 +5,8 @@
       "Bash(Select-Object Name, PSIsContainer)",
       "Bash(supabase migration *)",
       "mcp__claude_ai_Context7__query-docs",
-      "mcp__claude_ai_Context7__resolve-library-id"
+      "mcp__claude_ai_Context7__resolve-library-id",
+      "PowerShell(Get-ChildItem \"D:\\\\Área de Trabalho\\\\projetos\\\\lucky-numbers-live\" -Directory | Where-Object { $_.Name -match '^\\(\\\\.|\\\\.output|\\\\.vercel|dist|build\\)' })"
     ]
   }
 }
