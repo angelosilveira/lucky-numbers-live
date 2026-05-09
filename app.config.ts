@@ -1,5 +1,5 @@
 export default {
   server: {
-    preset: "vercel",
+    preset: "cloudflare_module",
   },
 };

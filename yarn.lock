@@ -256,6 +256,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cloudflare/workers-types@npm:^4.20260509.1":
+  version: 4.20260509.1
+  resolution: "@cloudflare/workers-types@npm:4.20260509.1"
+  checksum: 10c0/3184a66d0cbb2918bc8bca763a8f039f46b0f0d23b8991295446c1830966416712c893cdabd23f2b28dccc45e407c8799038dce87e9d4767634567353b81ec0c
+  languageName: node
+  linkType: hard
+
 "@date-fns/tz@npm:^1.4.1":
   version: 1.4.1
   resolution: "@date-fns/tz@npm:1.4.1"
@@ -7959,6 +7966,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tanstack_start_ts@workspace:."
   dependencies:
+    "@cloudflare/workers-types": "npm:^4.20260509.1"
     "@eslint/js": "npm:^9.32.0"
     "@hookform/resolvers": "npm:^5.2.2"
     "@radix-ui/react-accordion": "npm:^1.2.12"
