@@ -72,7 +72,8 @@ function AdminDashboard() {
 
   const winnersCount = (winners.data ?? []).length;
   const cardsList = (cards.data ?? []) as any[];
-  const topLeader = cardsList[0]; // já vem ordenado por hits desc
+  const topHits = (cardsList[0]?.hits ?? 0) as number;
+  const topLeaders = topHits > 0 ? cardsList.filter((c: any) => c.hits === topHits) : [];
 
   return (
     <div className="space-y-6">
@@ -123,10 +124,10 @@ function AdminDashboard() {
               <Row label="Cartões" value={String(totalCards.data ?? 0)} />
               <Row label="Números únicos sorteados" value={`${uniqueDrawn.length} / 100`} />
               <Row label="Prêmio líquido" value={brl(netPrize)} highlight />
-              {topLeader && topLeader.hits > 0 && (
+              {topLeaders.length > 0 && (
                 <Row
-                  label="Líder atual"
-                  value={`${topLeader.player_name} (${topLeader.hits} pts)`}
+                  label={topLeaders.length > 1 ? "Líderes atuais" : "Líder atual"}
+                  value={`${topLeaders.map((c: any) => c.player_name).join(", ")} (${topHits} pts)`}
                 />
               )}
             </div>
