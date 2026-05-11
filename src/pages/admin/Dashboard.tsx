@@ -116,4 +116,4 @@ function AdminDashboard() {
   );
 }
 
-export default Kpi;
+export default AdminDashboard;

@@ -190,4 +190,4 @@ function CartoesPage() {
   );
 }
 
-export default emptyDraft;
+export default CartoesPage;
