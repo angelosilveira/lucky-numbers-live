@@ -30,25 +30,13 @@ function LoginPage() {
 
   async function onSubmit(values: { email: string; password: string }) {
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     });
-    if (error || !data.user) {
+    if (error) {
       setLoading(false);
       toast.error("E-mail ou senha inválidos");
-      return;
-    }
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) {
-      await supabase.auth.signOut();
-      setLoading(false);
-      toast.error("Acesso restrito ao administrador.");
       return;
     }
     toast.success("Bem-vindo!");

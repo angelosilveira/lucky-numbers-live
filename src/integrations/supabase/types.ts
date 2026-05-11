@@ -54,6 +54,7 @@ export type Database = {
       }
       draw_numbers: {
         Row: {
+          batch_id: string | null
           draw_id: string
           drawn_at: string
           id: string
@@ -61,6 +62,7 @@ export type Database = {
           position: number
         }
         Insert: {
+          batch_id?: string | null
           draw_id: string
           drawn_at?: string
           id?: string
@@ -68,6 +70,7 @@ export type Database = {
           position: number
         }
         Update: {
+          batch_id?: string | null
           draw_id?: string
           drawn_at?: string
           id?: string
@@ -141,42 +144,24 @@ export type Database = {
       settings: {
         Row: {
           card_price: number
+          commission: number
           id: boolean
           prize_amount: number
           updated_at: string
         }
         Insert: {
           card_price?: number
+          commission?: number
           id?: boolean
           prize_amount?: number
           updated_at?: string
         }
         Update: {
           card_price?: number
+          commission?: number
           id?: boolean
           prize_amount?: number
           updated_at?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
         }
         Relationships: []
       }
@@ -272,16 +257,20 @@ export type Database = {
         Args: { p_draw: string; p_number: number }
         Returns: undefined
       }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
+      add_draw_numbers_batch: {
+        Args: { p_draw: string; p_numbers: number[]; p_drawn_at?: string }
+        Returns: undefined
+      }
+      delete_draw_round: {
+        Args: { p_draw: string; p_batch_id: string }
+        Returns: undefined
+      }
+      update_draw_round: {
+        Args: { p_draw: string; p_batch_id: string; p_numbers: number[]; p_drawn_at: string }
+        Returns: undefined
       }
     }
     Enums: {
-      app_role: "admin"
       draw_status: "active" | "finalized" | "cancelled"
     }
     CompositeTypes: {
@@ -410,7 +399,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin"],
       draw_status: ["active", "finalized", "cancelled"],
     },
   },

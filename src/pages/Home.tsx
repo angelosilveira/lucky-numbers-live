@@ -1,20 +1,13 @@
-import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { NumberGrid } from "@/components/public/NumberGrid";
 import { LiveStats } from "@/components/public/LiveStats";
 import { CardsTable } from "@/components/public/CardsTable";
-import { WinnersPanel } from "@/components/public/WinnersPanel";
-import { DrawHistory } from "@/components/public/DrawHistory";
-import {
-  useActiveDraw,
-  useDrawnNumbers,
-  useCards,
-  useWinners,
-  useDrawHistory,
-} from "@/hooks/useActiveDraw";
+import { LeadersPanel } from "@/components/public/LeadersPanel";
+import { DrawnNumbersHistory } from "@/components/public/DrawnNumbersHistory";
+import { useActiveDraw, useDrawnNumbers, useCards, useSettings } from "@/hooks/useActiveDraw";
 import { brl, formatDateTime } from "@/lib/format";
-import { Sparkles, Lock } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 ({
   head: () => ({
@@ -40,21 +33,25 @@ function PublicHome() {
   const drawId = draw.data?.id ?? null;
   const numbers = useDrawnNumbers(drawId);
   const cards = useCards(drawId);
-  const winners = useWinners(drawId);
-  const history = useDrawHistory();
+  const settings = useSettings();
 
-  const drawnList = (numbers.data ?? []).map((n: any) => n.number);
+  const drawnEntries = (numbers.data ?? []) as {
+    number: number;
+    position: number;
+    drawn_at: string;
+    batch_id?: string | null;
+  }[];
+  const drawnList = drawnEntries.map((n) => n.number);
   const cardsList = (cards.data ?? []) as any[];
-  const winnersList = (winners.data ?? []) as any[];
 
-  const leaders = useMemo(
-    () =>
-      cardsList
-        .slice()
-        .sort((a, b) => b.hits - a.hits)
-        .slice(0, 5),
-    [cardsList],
-  );
+  const uniqueDrawn = useMemo(() => [...new Set(drawnList)], [drawnList]);
+
+  const commission = Number(settings.data?.commission ?? 0);
+  const cardPrice = Number(draw.data?.card_price ?? 0);
+  const prizeAmount = cardsList.length * cardPrice * (1 - commission / 100);
+
+  const winnersCount = useMemo(() => cardsList.filter((c) => c.hits === 10).length, [cardsList]);
+  const leadersCount = useMemo(() => cardsList.filter((c) => c.hits > 0).length, [cardsList]);
 
   return (
     <div className="min-h-screen bg-hero">
@@ -79,19 +76,11 @@ function PublicHome() {
           animate={{ opacity: 1, y: 0 }}
           className="rounded-2xl border border-border bg-card/50 backdrop-blur p-5 sm:p-7"
         >
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                {draw.data ? "Sorteio em andamento" : "Aguardando sorteio"}
-              </div>
-              <h1 className="font-display text-3xl sm:text-5xl mt-1">
-                {draw.data ? formatDateTime(draw.data.scheduled_at) : "—"}
-              </h1>
-            </div>
-            <div className="text-right">
+          <div className="flex flex-wrap items-end justify-center gap-3">
+            <div className="text-center">
               <div className="text-xs uppercase tracking-widest text-muted-foreground">Prêmio</div>
               <div className="font-display text-3xl sm:text-5xl text-gold text-glow-gold">
-                {brl(Number(draw.data?.prize_amount ?? 0))}
+                {brl(prizeAmount)}
               </div>
             </div>
           </div>
@@ -100,37 +89,36 @@ function PublicHome() {
         {/* STATS */}
         <LiveStats
           stats={[
-            { label: "Sorteados", value: drawnList.length, accent: "gold" },
-            { label: "Restantes", value: 10 - drawnList.length },
+            { label: "Sorteados", value: uniqueDrawn.length, accent: "gold" },
+            { label: "Restantes", value: 100 - uniqueDrawn.length },
             { label: "Cartões", value: cardsList.length, accent: "neon" },
-            { label: "Líderes", value: leaders.filter((l) => l.hits > 0).length },
-            { label: "Ganhadores", value: winnersList.length, accent: "success" },
-            { label: "Cartão", value: brl(Number(draw.data?.card_price ?? 0)) },
+            { label: "Líderes", value: leadersCount },
+            { label: "Ganhadores", value: winnersCount, accent: "success" },
           ]}
         />
 
-        {/* GRID + WINNERS */}
+        {/* GRID + LÍDERES */}
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <h2 className="font-display text-xl">Números sorteados</h2>
-            <NumberGrid drawn={drawnList} />
+            <NumberGrid drawn={uniqueDrawn} />
           </div>
           <div className="space-y-4">
-            <h2 className="font-display text-xl">Ganhadores</h2>
-            <WinnersPanel winners={winnersList} />
+            <h2 className="font-display text-xl">{winnersCount > 0 ? "Ganhadores" : "Líderes"}</h2>
+            <LeadersPanel cards={cardsList} />
           </div>
         </div>
 
-        {/* CARDS + HISTORY */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-3">
-            <h2 className="font-display text-xl">Jogadores</h2>
-            <CardsTable cards={cardsList} drawn={drawnList} />
-          </div>
-          <div className="space-y-3">
-            <h2 className="font-display text-xl">Histórico</h2>
-            <DrawHistory items={(history.data ?? []) as any[]} />
-          </div>
+        {/* DRAWN NUMBERS HISTORY */}
+        <div className="space-y-4">
+          <h2 className="font-display text-xl">Números sorteados (ordem)</h2>
+          <DrawnNumbersHistory entries={drawnEntries} />
+        </div>
+
+        {/* CARDS */}
+        <div className="space-y-3">
+          <h2 className="font-display text-xl">Jogadores</h2>
+          <CardsTable cards={cardsList} drawn={uniqueDrawn} />
         </div>
 
         <footer className="py-8 text-center text-xs text-muted-foreground">

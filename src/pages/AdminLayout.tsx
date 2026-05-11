@@ -16,15 +16,15 @@ const NAV = [
 ];
 
 function AdminLayout() {
-  const { loading, user, isAdmin, signOut } = useAuth();
+  const { loading, user, signOut } = useAuth();
   const navigate = useNavigate();
   const path = useLocation().pathname;
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) navigate("/login");
-  }, [loading, user, isAdmin, navigate]);
+    if (!loading && !user) navigate("/login");
+  }, [loading, user, navigate]);
 
-  if (loading || !user || !isAdmin) {
+  if (loading || !user) {
     return (
       <div className="theme-admin min-h-screen flex items-center justify-center text-muted-foreground">
         Carregando...

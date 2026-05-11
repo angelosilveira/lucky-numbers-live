@@ -16,21 +16,30 @@ function ConfigPage() {
   const { data } = useSettings();
   const [cardPrice, setCardPrice] = useState<number>(10);
   const [prize, setPrize] = useState<number>(0);
+  const [commission, setCommission] = useState<number>(0);
 
   useEffect(() => {
     if (data) {
       setCardPrice(Number(data.card_price));
       setPrize(Number(data.prize_amount));
+      setCommission(Number(data.commission ?? 0));
     }
   }, [data]);
 
+  const commissionError =
+    commission < 0 || commission > 100
+      ? "A comissão deve ser entre 0% e 100%"
+      : null;
+
   const save = useMutation({
     mutationFn: async () => {
+      if (commissionError) throw new Error(commissionError);
       const { error } = await supabase
         .from("settings")
         .update({
           card_price: cardPrice,
           prize_amount: prize,
+          commission,
           updated_at: new Date().toISOString(),
         })
         .eq("id", true);
@@ -71,7 +80,28 @@ function ConfigPage() {
             onChange={(e) => setPrize(Number(e.target.value))}
           />
         </div>
-        <Button onClick={() => save.mutate()} disabled={save.isPending}>
+        <div>
+          <Label>Comissão (%)</Label>
+          <Input
+            type="number"
+            step="0.01"
+            min={0}
+            max={100}
+            value={commission}
+            onChange={(e) => setCommission(Number(e.target.value))}
+            placeholder="0"
+          />
+          {commissionError && (
+            <p className="text-xs text-destructive mt-1">{commissionError}</p>
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            O prêmio exibido será: total de cartões × valor do cartão × (1 − comissão%)
+          </p>
+        </div>
+        <Button
+          onClick={() => save.mutate()}
+          disabled={save.isPending || !!commissionError}
+        >
           Salvar
         </Button>
       </div>

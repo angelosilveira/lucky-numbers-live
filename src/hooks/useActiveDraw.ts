@@ -52,7 +52,7 @@ export function useDrawnNumbers(drawId?: string | null) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("draw_numbers")
-        .select("number, position, drawn_at")
+        .select("number, position, drawn_at, batch_id")
         .eq("draw_id", drawId!)
         .order("position", { ascending: true });
       if (error) throw error;
