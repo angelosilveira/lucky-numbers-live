@@ -189,3 +189,5 @@ function CartoesPage() {
     </div>
   );
 }
+
+export default emptyDraft;

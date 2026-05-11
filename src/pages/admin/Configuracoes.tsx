@@ -78,3 +78,5 @@ function ConfigPage() {
     </div>
   );
 }
+
+export default ConfigPage;

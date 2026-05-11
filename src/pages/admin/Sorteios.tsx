@@ -227,3 +227,5 @@ function SorteiosPage() {
     </div>
   );
 }
+
+export default SorteiosPage;

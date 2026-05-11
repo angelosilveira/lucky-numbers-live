@@ -115,3 +115,5 @@ function AdminDashboard() {
     </div>
   );
 }
+
+export default Kpi;

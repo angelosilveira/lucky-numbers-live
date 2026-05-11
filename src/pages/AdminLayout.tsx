@@ -115,3 +115,5 @@ function AdminLayout() {
 
 // Silence unused
 void Menu;
+
+export default AdminLayout;

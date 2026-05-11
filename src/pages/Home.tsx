@@ -140,3 +140,5 @@ function PublicHome() {
     </div>
   );
 }
+
+export default PublicHome;
