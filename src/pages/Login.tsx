@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Lock } from "lucide-react";
 
-export const Route = createFileRoute("/login")({
+({
   head: () => ({ meta: [{ title: "Login Admin — BichoLive" }] }),
   component: LoginPage,
 });
@@ -52,7 +52,7 @@ function LoginPage() {
       return;
     }
     toast.success("Bem-vindo!");
-    navigate({ to: "/admin" });
+    navigate("/admin");
   }
 
   return (
@@ -117,3 +117,5 @@ function LoginPage() {
     </div>
   );
 }
+
+export default LoginPage;

@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/configuracoes")({
+({
   component: ConfigPage,
 });
 
@@ -79,3 +78,5 @@ function ConfigPage() {
     </div>
   );
 }
+
+export default ConfigPage;

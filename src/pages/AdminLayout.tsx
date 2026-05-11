@@ -1,10 +1,10 @@
-import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { LayoutDashboard, Trophy, CreditCard, Settings, LogOut, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated")({
+({
   component: AdminLayout,
 });
 
@@ -18,10 +18,10 @@ const NAV = [
 function AdminLayout() {
   const { loading, user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const path = useLocation().pathname;
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) navigate({ to: "/login" });
+    if (!loading && (!user || !isAdmin)) navigate("/login");
   }, [loading, user, isAdmin, navigate]);
 
   if (loading || !user || !isAdmin) {
@@ -63,7 +63,7 @@ function AdminLayout() {
             })}
           </nav>
           <button
-            onClick={() => signOut().then(() => navigate({ to: "/login" }))}
+            onClick={() => signOut().then(() => navigate("/login"))}
             className="m-3 flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-border hover:bg-accent"
           >
             <LogOut className="size-4" /> Sair
@@ -75,7 +75,7 @@ function AdminLayout() {
           <header className="md:hidden sticky top-0 z-20 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
             <div className="font-display">BichoLive Admin</div>
             <button
-              onClick={() => signOut().then(() => navigate({ to: "/login" }))}
+              onClick={() => signOut().then(() => navigate("/login"))}
               className="p-2 rounded-md border border-border"
               aria-label="Sair"
             >
@@ -115,3 +115,5 @@ function AdminLayout() {
 
 // Silence unused
 void Menu;
+
+export default AdminLayout;

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useMemo } from "react";
 import { NumberGrid } from "@/components/public/NumberGrid";
@@ -16,7 +16,7 @@ import {
 import { brl, formatDateTime } from "@/lib/format";
 import { Sparkles, Lock } from "lucide-react";
 
-export const Route = createFileRoute("/")({
+({
   head: () => ({
     meta: [
       { title: "Jogo do Bicho — Sorteio ao vivo" },
@@ -140,3 +140,5 @@ function PublicHome() {
     </div>
   );
 }
+
+export default PublicHome;

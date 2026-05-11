@@ -1,11 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/format";
 import { useActiveDraw, useCards, useDrawnNumbers, useWinners } from "@/hooks/useActiveDraw";
 import { Trophy, Users, Banknote, Activity } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin/")({
+({
   component: AdminDashboard,
 });
 
@@ -116,3 +115,5 @@ function AdminDashboard() {
     </div>
   );
 }
+
+export default AdminDashboard;
