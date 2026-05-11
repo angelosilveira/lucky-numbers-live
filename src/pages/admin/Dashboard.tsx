@@ -1,117 +1,199 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { brl } from "@/lib/format";
-import { useActiveDraw, useCards, useDrawnNumbers, useWinners } from "@/hooks/useActiveDraw";
-import { Trophy, Users, Banknote, Activity } from "lucide-react";
+import { brl, formatDateTime } from "@/lib/format";
+import { useActiveDraw, useCards, useDrawnNumbers, useSettings, useWinners } from "@/hooks/useActiveDraw";
+import { Trophy, CreditCard, Banknote, Activity, TrendingUp } from "lucide-react";
+import { useMemo } from "react";
 
 ({
   component: AdminDashboard,
 });
 
-function Kpi({ label, value, icon: Icon }: { label: string; value: string | number; icon: any }) {
+function Kpi({
+  label,
+  value,
+  sub,
+  icon: Icon,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  icon: any;
+  accent?: "gold" | "success" | "default";
+}) {
+  const valueClass =
+    accent === "gold"
+      ? "text-yellow-500"
+      : accent === "success"
+      ? "text-green-500"
+      : "text-foreground";
+
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-card flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <span className="text-xs uppercase text-muted-foreground tracking-wide">{label}</span>
-        <Icon className="size-4 text-primary" />
+        <Icon className="size-4 text-muted-foreground" />
       </div>
-      <div className="mt-2 text-2xl font-display">{value}</div>
+      <div className={`text-3xl font-display ${valueClass}`}>{value}</div>
+      {sub && <div className="text-xs text-muted-foreground -mt-1">{sub}</div>}
     </div>
   );
 }
 
 function AdminDashboard() {
   const draw = useActiveDraw();
+  const settings = useSettings();
   const numbers = useDrawnNumbers(draw.data?.id);
   const cards = useCards(draw.data?.id);
   const winners = useWinners(draw.data?.id);
 
-  const monthly = useQuery({
-    queryKey: ["revenue-month"],
+  const totalCards = useQuery({
+    queryKey: ["total-cards", draw.data?.id],
+    enabled: !!draw.data?.id,
     queryFn: async () => {
-      const start = new Date();
-      start.setDate(1);
-      start.setHours(0, 0, 0, 0);
-      const { data, error } = await supabase
-        .from("cards")
-        .select("price, created_at")
-        .gte("created_at", start.toISOString());
-      if (error) throw error;
-      return (data ?? []).reduce((s, r: any) => s + Number(r.price), 0);
-    },
-  });
-
-  const todayCards = useQuery({
-    queryKey: ["cards-today"],
-    queryFn: async () => {
-      const start = new Date();
-      start.setHours(0, 0, 0, 0);
       const { count } = await supabase
         .from("cards")
         .select("id", { count: "exact", head: true })
-        .gte("created_at", start.toISOString());
+        .eq("draw_id", draw.data!.id);
       return count ?? 0;
     },
   });
+
+  const commission = Number(settings.data?.commission ?? 0);
+  const cardPrice = Number(draw.data?.card_price ?? 0);
+  const totalRevenue = (totalCards.data ?? 0) * cardPrice;
+  const netPrize = totalRevenue * (1 - commission / 100);
+
+  const uniqueDrawn = useMemo(
+    () => [...new Set((numbers.data ?? []).map((n: any) => n.number as number))],
+    [numbers.data],
+  );
+
+  const winnersCount = (winners.data ?? []).length;
+  const cardsList = (cards.data ?? []) as any[];
+  const topLeader = cardsList[0]; // já vem ordenado por hits desc
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-display">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">Visão geral em tempo real.</p>
+        <p className="text-sm text-muted-foreground">Visão geral do sorteio ativo.</p>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* KPIs */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Kpi
           label="Sorteio ativo"
           value={draw.data ? "Ao vivo" : "Nenhum"}
+          sub={draw.data ? formatDateTime(draw.data.scheduled_at) : "Crie um em Sorteios"}
           icon={Activity}
+          accent={draw.data ? "gold" : "default"}
         />
-        <Kpi label="Cartões hoje" value={todayCards.data ?? 0} icon={Users} />
-        <Kpi label="Faturamento mês" value={brl(monthly.data ?? 0)} icon={Banknote} />
-        <Kpi label="Ganhadores" value={(winners.data ?? []).length} icon={Trophy} />
+        <Kpi
+          label="Total de cartões"
+          value={totalCards.data ?? 0}
+          sub={`${brl(totalRevenue)} em vendas`}
+          icon={CreditCard}
+        />
+        <Kpi
+          label="Prêmio líquido"
+          value={brl(netPrize)}
+          sub={commission > 0 ? `${commission}% de comissão` : "Sem comissão"}
+          icon={Banknote}
+          accent="gold"
+        />
+        <Kpi
+          label="Ganhadores"
+          value={winnersCount}
+          sub={winnersCount > 0 ? `${winnersCount} ganhador${winnersCount > 1 ? "es" : ""}` : "Aguardando"}
+          icon={Trophy}
+          accent={winnersCount > 0 ? "success" : "default"}
+        />
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-          <div className="font-display text-lg mb-3">Sorteio atual</div>
+      {/* Detalhes */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* Sorteio atual */}
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card space-y-4">
+          <div className="font-display text-lg">Sorteio atual</div>
           {draw.data ? (
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="text-muted-foreground">Prêmio: </span>
-                <span className="font-medium">{brl(Number(draw.data.prize_amount))}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Cartões: </span>
-                <span className="font-medium">{(cards.data ?? []).length}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Números sorteados: </span>
-                <span className="font-medium">{(numbers.data ?? []).length}/10</span>
-              </div>
+            <div className="space-y-3">
+              <Row label="Data" value={formatDateTime(draw.data.scheduled_at)} />
+              <Row label="Cartões" value={String(totalCards.data ?? 0)} />
+              <Row label="Números únicos sorteados" value={`${uniqueDrawn.length} / 100`} />
+              <Row label="Prêmio líquido" value={brl(netPrize)} highlight />
+              {topLeader && topLeader.hits > 0 && (
+                <Row
+                  label="Líder atual"
+                  value={`${topLeader.player_name} (${topLeader.hits} pts)`}
+                />
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Nenhum sorteio ativo. Crie um em "Sorteios".
+              Nenhum sorteio ativo.
             </p>
           )}
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5 shadow-card">
-          <div className="font-display text-lg mb-3">Últimos ganhadores</div>
-          <ul className="space-y-2 text-sm">
-            {(winners.data ?? []).slice(-5).reverse().map((w: any) => (
-              <li key={w.id} className="flex justify-between">
-                <span>{w.cards?.player_name}</span>
-                <span className="text-success font-medium">{brl(Number(w.prize_share))}</span>
-              </li>
-            ))}
-            {!(winners.data ?? []).length && (
-              <li className="text-muted-foreground">Sem ganhadores ainda.</li>
-            )}
-          </ul>
+        {/* Últimos ganhadores */}
+        <div className="lg:col-span-2 rounded-xl border border-border bg-card p-5 shadow-card">
+          <div className="font-display text-lg mb-4 flex items-center gap-2">
+            <Trophy className="size-4 text-yellow-500" />
+            Últimos ganhadores
+          </div>
+          {(winners.data ?? []).length ? (
+            <div className="overflow-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase text-muted-foreground">
+                    <th className="pb-2">Jogador</th>
+                    <th className="pb-2">Cartão</th>
+                    <th className="pb-2 text-right">Prêmio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...(winners.data ?? [])].reverse().slice(0, 10).map((w: any) => (
+                    <tr key={w.id} className="border-t border-border">
+                      <td className="py-2 font-medium">{w.cards?.player_name ?? "—"}</td>
+                      <td className="py-2 font-mono text-muted-foreground">
+                        {w.cards?.card_number}
+                      </td>
+                      <td className="py-2 text-right font-display text-green-500">
+                        {brl(Number(w.prize_share))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-24 text-sm text-muted-foreground">
+              Nenhum ganhador ainda.
+            </div>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={highlight ? "font-display text-base text-yellow-500" : "font-medium"}>
+        {value}
+      </span>
     </div>
   );
 }
